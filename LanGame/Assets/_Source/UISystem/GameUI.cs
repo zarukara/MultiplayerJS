@@ -39,7 +39,7 @@ namespace UISystem
 
             PlayerState localPlayer = state.players[networkClient.PlayerId];
 
-            hpText.text = "HP: " + localPlayer.hp;
+            hpText.text = "" + localPlayer.hp;
 
             losePanel.SetActive(localPlayer.isDead);
         }
