@@ -9,14 +9,27 @@ namespace ViewSystem
     {
         [SerializeField] private NetworkClient networkClient;
         [SerializeField] private PlayerNetworkView playerPrefab;
+        [SerializeField] private BulletNetworkView bulletPrefab;
 
         private readonly Dictionary<string, PlayerNetworkView> players = new();
+        private readonly Dictionary<string, BulletNetworkView> bullets = new();
 
         private void Update()
         {
             ServerStateMessage state = networkClient.LastState;
 
-            if (state == null || state.players == null)
+            if (state == null)
+            {
+                return;
+            }
+
+            UpdatePlayers(state);
+            UpdateBullets(state);
+        }
+
+        private void UpdatePlayers(ServerStateMessage state)
+        {
+            if (state.players == null)
             {
                 return;
             }
@@ -39,6 +52,46 @@ namespace ViewSystem
                     playerState.x,
                     playerState.y,
                     playerState.isDead);
+            }
+        }
+
+        private void UpdateBullets(ServerStateMessage state)
+        {
+            if (state.bullets == null)
+            {
+                return;
+            }
+
+            foreach (var pair in state.bullets)
+            {
+                string bulletId = pair.Key;
+                BulletState bulletState = pair.Value;
+
+                if (!bullets.ContainsKey(bulletId))
+                {
+                    BulletNetworkView view = Instantiate(bulletPrefab);
+                    bullets.Add(bulletId, view);
+                }
+
+                bullets[bulletId].UpdateView(
+                    bulletState.x,
+                    bulletState.y);
+            }
+
+            List<string> bulletsToRemove = new();
+
+            foreach (var pair in bullets)
+            {
+                if (!state.bullets.ContainsKey(pair.Key))
+                {
+                    bulletsToRemove.Add(pair.Key);
+                }
+            }
+
+            foreach (string bulletId in bulletsToRemove)
+            {
+                Destroy(bullets[bulletId].gameObject);
+                bullets.Remove(bulletId);
             }
         }
     }

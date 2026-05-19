@@ -48,6 +48,11 @@ namespace NetworkSystem
         {
             ReadInput();
             SendInput();
+            
+            if (Input.GetMouseButtonDown(0))
+            {
+                SendShootFromMouse();
+            }
         }
 
         private void ReadInput()
@@ -137,6 +142,39 @@ namespace NetworkSystem
             byte[] data = Encoding.UTF8.GetBytes(json);
 
             udpClient.Send(data, data.Length, serverEndPoint);
+        }
+        
+        private void SendShootFromMouse()
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition.z = 0f;
+
+            ServerStateMessage state = LastState;
+
+            if (state == null || state.players == null)
+            {
+                return;
+            }
+
+            if (!state.players.ContainsKey(PlayerId))
+            {
+                return;
+            }
+
+            PlayerState localPlayer = state.players[PlayerId];
+
+            Vector2 direction = new Vector2(
+                mousePosition.x - localPlayer.x,
+                mousePosition.y - localPlayer.y);
+
+            if (direction.sqrMagnitude <= 0.01f)
+            {
+                return;
+            }
+
+            direction.Normalize();
+
+            SendShoot(direction.x, direction.y);
         }
 
         private void OnApplicationQuit()
