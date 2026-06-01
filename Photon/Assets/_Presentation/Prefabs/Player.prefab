@@ -181,6 +181,10 @@ MonoBehaviour:
   maxHealth: 3
   shootPoint: {fileID: 4650470899780434454}
   bulletPrefab: {fileID: 6385828196110401633, guid: a562056b7741d574c876342f1182472b, type: 3}
+  bodyRenderer: {fileID: 1720683298214034740}
+  redTeamColor: {r: 0.53990114, g: 0.2971698, b: 1, a: 1}
+  blueTeamColor: {r: 0.99155533, g: 1, b: 0.4481132, a: 1}
+  deadColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1250880657274628718
 GameObject:
   m_ObjectHideFlags: 0

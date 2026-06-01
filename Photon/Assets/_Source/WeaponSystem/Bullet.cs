@@ -1,5 +1,6 @@
 using Mirror;
 using PlayerSystem;
+using TeamSystem;
 using UnityEngine;
 
 namespace WeaponSystem
@@ -12,12 +13,17 @@ namespace WeaponSystem
 
         private Vector3 direction;
         private uint ownerNetId;
+        private TeamType ownerTeam;
 
         [Server]
-        public void Init(Vector3 shootDirection, uint ownerId)
+        public void Init(
+            Vector3 shootDirection,
+            uint ownerId,
+            TeamType team)
         {
             direction = shootDirection.normalized;
             ownerNetId = ownerId;
+            ownerTeam = team;
 
             Invoke(nameof(DestroyBullet), lifeTime);
         }
@@ -31,15 +37,29 @@ namespace WeaponSystem
         [ServerCallback]
         private void OnTriggerEnter(Collider other)
         {
-            MirrorPlayer player = other.GetComponent<MirrorPlayer>();
+            MirrorPlayer player =
+                other.GetComponentInParent<MirrorPlayer>();
 
             if (player == null)
             {
+                DestroyBullet();
                 return;
             }
 
             if (player.netId == ownerNetId)
             {
+                return;
+            }
+
+            if (player.Team == ownerTeam)
+            {
+                DestroyBullet();
+                return;
+            }
+
+            if (player.IsDead)
+            {
+                DestroyBullet();
                 return;
             }
 

@@ -1,4 +1,6 @@
 using Mirror;
+using RoundSystem;
+using TeamSystem;
 using UnityEngine;
 
 namespace PlayerSystem
@@ -13,19 +15,56 @@ namespace PlayerSystem
         [SerializeField] private Transform shootPoint;
         [SerializeField] private GameObject bulletPrefab;
 
-        [SyncVar]
+        [Header("Visual")]
+        [SerializeField] private Renderer bodyRenderer;
+        [SerializeField] private Color redTeamColor = Color.red;
+        [SerializeField] private Color blueTeamColor = Color.blue;
+        [SerializeField] private Color deadColor = Color.gray;
+
+        [SyncVar(hook = nameof(OnHealthChanged))]
         private int currentHealth;
 
+        [SyncVar(hook = nameof(OnTeamChanged))]
+        private TeamType team;
+
+        [SyncVar(hook = nameof(OnDeadChanged))]
+        private bool isDead;
+
         private Vector3 lastLookDirection = Vector3.forward;
+
+        public int CurrentHealth => currentHealth;
+        public int MaxHealth => maxHealth;
+        public TeamType Team => team;
+        public bool IsDead => isDead;
 
         public override void OnStartServer()
         {
             currentHealth = maxHealth;
+            isDead = false;
+        }
+
+        public override void OnStartClient()
+        {
+            ApplyTeamColor();
+            ApplyDeadVisual();
+        }
+
+        [Server]
+        public void ServerInitialize(TeamType newTeam)
+        {
+            team = newTeam;
+            currentHealth = maxHealth;
+            isDead = false;
         }
 
         private void Update()
         {
             if (!isLocalPlayer)
+            {
+                return;
+            }
+
+            if (isDead)
             {
                 return;
             }
@@ -105,6 +144,11 @@ namespace PlayerSystem
         [Command]
         private void CmdShoot(Vector3 direction)
         {
+            if (isDead)
+            {
+                return;
+            }
+
             if (bulletPrefab == null)
             {
                 Debug.LogError("Bullet prefab is not assigned");
@@ -137,7 +181,7 @@ namespace PlayerSystem
             WeaponSystem.Bullet bullet =
                 bulletObject.GetComponent<WeaponSystem.Bullet>();
 
-            bullet.Init(direction, netId);
+            bullet.Init(direction, netId, team);
 
             NetworkServer.Spawn(bulletObject);
         }
@@ -145,13 +189,118 @@ namespace PlayerSystem
         [Server]
         public void TakeDamage(int damage)
         {
+            if (isDead)
+            {
+                return;
+            }
+
             currentHealth -= damage;
 
             Debug.Log("Player " + netId + " HP: " + currentHealth);
 
             if (currentHealth <= 0)
             {
-                NetworkServer.Destroy(gameObject);
+                currentHealth = 0;
+                isDead = true;
+
+                Debug.Log("Player " + netId + " died");
+
+                if (RoundManager.Instance != null)
+                {
+                    RoundManager.Instance.ServerCheckRoundState();
+                }
+            }
+        }
+
+		[Server]
+		public void Respawn(Vector3 spawnPosition, Quaternion spawnRotation)
+		{
+ 		   currentHealth = maxHealth;
+ 		   isDead = false;
+
+   		 transform.position = spawnPosition;
+  		  transform.rotation = spawnRotation;
+
+ 		   Debug.Log($"Respawn player {netId} team {team} to {spawnPosition}");
+
+		    RpcRespawnForObservers(spawnPosition, spawnRotation);
+
+ 		   if (connectionToClient != null)
+		    {
+ 		       TargetRespawnOwner(connectionToClient, spawnPosition, spawnRotation);
+ 		   }
+		}
+
+		[ClientRpc]
+		private void RpcRespawnForObservers(Vector3 spawnPosition, Quaternion spawnRotation)
+		{
+ 		   transform.position = spawnPosition;
+   		 transform.rotation = spawnRotation;
+
+  		  ApplyDeadVisual();
+		}
+
+		[TargetRpc]
+		private void TargetRespawnOwner(
+ 		   NetworkConnectionToClient target,
+ 		   Vector3 spawnPosition,
+ 		   Quaternion spawnRotation)
+		{
+  		  transform.position = spawnPosition;
+ 		   transform.rotation = spawnRotation;
+	
+ 		   ApplyDeadVisual();
+		}
+
+        private void OnHealthChanged(int oldValue, int newValue)
+        {
+        }
+
+        private void OnTeamChanged(TeamType oldTeam, TeamType newTeam)
+        {
+            ApplyTeamColor();
+        }
+
+        private void OnDeadChanged(bool oldValue, bool newValue)
+        {
+            ApplyDeadVisual();
+        }
+
+        private void ApplyTeamColor()
+        {
+            if (bodyRenderer == null)
+            {
+                bodyRenderer = GetComponentInChildren<Renderer>();
+            }
+
+            if (bodyRenderer == null)
+            {
+                return;
+            }
+
+            bodyRenderer.material.color =
+                team == TeamType.Red ? redTeamColor : blueTeamColor;
+        }
+
+        private void ApplyDeadVisual()
+        {
+            if (bodyRenderer == null)
+            {
+                bodyRenderer = GetComponentInChildren<Renderer>();
+            }
+
+            if (bodyRenderer == null)
+            {
+                return;
+            }
+
+            if (isDead)
+            {
+                bodyRenderer.material.color = deadColor;
+            }
+            else
+            {
+                ApplyTeamColor();
             }
         }
     }
