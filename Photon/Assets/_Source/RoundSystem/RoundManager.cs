@@ -23,6 +23,9 @@ namespace RoundSystem
         [SyncVar] private bool roundActive;
         [SyncVar] private bool matchFinished;
 
+        [SyncVar] private int redPlayersCount;
+        [SyncVar] private int bluePlayersCount;
+
         [SyncVar] private string roundWinnerText;
         [SyncVar] private string matchWinnerText;
 
@@ -33,6 +36,10 @@ namespace RoundSystem
         public int CurrentRound => currentRound;
         public bool RoundActive => roundActive;
         public bool MatchFinished => matchFinished;
+
+        public int RedPlayersCount => redPlayersCount;
+        public int BluePlayersCount => bluePlayersCount;
+
         public string RoundWinnerText => roundWinnerText;
         public string MatchWinnerText => matchWinnerText;
 
@@ -48,6 +55,10 @@ namespace RoundSystem
             currentRound = 0;
             roundActive = false;
             matchFinished = false;
+
+            redPlayersCount = 0;
+            bluePlayersCount = 0;
+
             roundWinnerText = string.Empty;
             matchWinnerText = string.Empty;
         }
@@ -62,6 +73,8 @@ namespace RoundSystem
 
             players.Add(player);
 
+            UpdateTeamPlayersCount();
+
             Debug.Log("Player registered in RoundManager: " + player.netId);
 
             TryStartFirstRound();
@@ -75,9 +88,35 @@ namespace RoundSystem
                 players.Remove(player);
             }
 
+            UpdateTeamPlayersCount();
+
             if (roundActive)
             {
                 ServerCheckRoundState();
+            }
+        }
+
+        [Server]
+        private void UpdateTeamPlayersCount()
+        {
+            redPlayersCount = 0;
+            bluePlayersCount = 0;
+
+            foreach (MirrorPlayer player in players)
+            {
+                if (player == null)
+                {
+                    continue;
+                }
+
+                if (player.Team == TeamType.Red)
+                {
+                    redPlayersCount++;
+                }
+                else if (player.Team == TeamType.Blue)
+                {
+                    bluePlayersCount++;
+                }
             }
         }
 
