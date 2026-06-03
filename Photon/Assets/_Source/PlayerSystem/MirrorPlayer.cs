@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace PlayerSystem
 {
+    [RequireComponent(typeof(CharacterController))]
     public class MirrorPlayer : NetworkBehaviour
     {
         [Header("Movement")]
@@ -30,12 +31,18 @@ namespace PlayerSystem
         [SyncVar(hook = nameof(OnDeadChanged))]
         private bool isDead;
 
+        private CharacterController characterController;
         private Vector3 lastLookDirection = Vector3.forward;
 
         public int CurrentHealth => currentHealth;
         public int MaxHealth => maxHealth;
         public TeamType Team => team;
         public bool IsDead => isDead;
+
+        private void Awake()
+        {
+            characterController = GetComponent<CharacterController>();
+        }
 
         public override void OnStartServer()
         {
@@ -86,7 +93,9 @@ namespace PlayerSystem
                 direction.Normalize();
             }
 
-            transform.position += direction * moveSpeed * Time.deltaTime;
+            Vector3 movement = direction * moveSpeed * Time.deltaTime;
+
+            characterController.Move(movement);
         }
 
         private void HandleRotation()
@@ -218,8 +227,12 @@ namespace PlayerSystem
             currentHealth = maxHealth;
             isDead = false;
 
+            SetCharacterControllerEnabled(false);
+
             transform.position = spawnPosition;
             transform.rotation = spawnRotation;
+
+            SetCharacterControllerEnabled(true);
 
             Debug.Log($"Respawn player {netId} team {team} to {spawnPosition}");
 
@@ -234,8 +247,12 @@ namespace PlayerSystem
         [ClientRpc]
         private void RpcRespawnForObservers(Vector3 spawnPosition, Quaternion spawnRotation)
         {
+            SetCharacterControllerEnabled(false);
+
             transform.position = spawnPosition;
             transform.rotation = spawnRotation;
+
+            SetCharacterControllerEnabled(true);
 
             ApplyDeadVisual();
         }
@@ -246,10 +263,27 @@ namespace PlayerSystem
             Vector3 spawnPosition,
             Quaternion spawnRotation)
         {
+            SetCharacterControllerEnabled(false);
+
             transform.position = spawnPosition;
             transform.rotation = spawnRotation;
 
+            SetCharacterControllerEnabled(true);
+
             ApplyDeadVisual();
+        }
+
+        private void SetCharacterControllerEnabled(bool value)
+        {
+            if (characterController == null)
+            {
+                characterController = GetComponent<CharacterController>();
+            }
+
+            if (characterController != null)
+            {
+                characterController.enabled = value;
+            }
         }
 
         private void OnHealthChanged(int oldValue, int newValue)

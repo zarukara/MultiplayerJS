@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2195359483170334988}
   - component: {fileID: 1720683298214034740}
   - component: {fileID: 9039564518746768866}
+  - component: {fileID: -3070046930684160781}
   - component: {fileID: 6853579307275964379}
   - component: {fileID: 1792123836474572430}
   - component: {fileID: 7153580480281627695}
@@ -111,6 +112,32 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!143 &-3070046930684160781
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 929037429369097112}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6853579307275964379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,8 +209,8 @@ MonoBehaviour:
   shootPoint: {fileID: 4650470899780434454}
   bulletPrefab: {fileID: 6385828196110401633, guid: a562056b7741d574c876342f1182472b, type: 3}
   bodyRenderer: {fileID: 1720683298214034740}
-  redTeamColor: {r: 0.53990114, g: 0.2971698, b: 1, a: 1}
-  blueTeamColor: {r: 0.99155533, g: 1, b: 0.4481132, a: 1}
+  purpleTeamColor: {r: 0.45, g: 0.15, b: 0.9, a: 1}
+  yellowTeamColor: {r: 1, g: 0.85, b: 0.1, a: 1}
   deadColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1250880657274628718
 GameObject:
