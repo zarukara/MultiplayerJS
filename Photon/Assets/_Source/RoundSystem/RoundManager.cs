@@ -182,16 +182,29 @@ namespace RoundSystem
         }
 
         [Server]
-        public Transform GetSpawnTransform(TeamType team)
+        public Vector3 GetSpawnPosition(TeamType team)
         {
             TeamSpawnPoint spawnPoint = GetSpawnPoint(team);
 
             if (spawnPoint == null)
             {
-                return null;
+                return Vector3.zero;
             }
 
-            return spawnPoint.transform;
+            return spawnPoint.GetRandomSpawnPosition();
+        }
+
+        [Server]
+        public Quaternion GetSpawnRotation(TeamType team)
+        {
+            TeamSpawnPoint spawnPoint = GetSpawnPoint(team);
+
+            if (spawnPoint == null)
+            {
+                return Quaternion.identity;
+            }
+
+            return spawnPoint.GetSpawnRotation();
         }
 
         [Server]
@@ -296,17 +309,10 @@ namespace RoundSystem
                     continue;
                 }
 
-                TeamSpawnPoint spawnPoint = GetSpawnPoint(player.Team);
+                Vector3 spawnPosition = GetSpawnPosition(player.Team);
+                Quaternion spawnRotation = GetSpawnRotation(player.Team);
 
-                if (spawnPoint == null)
-                {
-                    player.Respawn(Vector3.zero, Quaternion.identity);
-                    continue;
-                }
-
-                player.Respawn(
-                    spawnPoint.transform.position,
-                    spawnPoint.transform.rotation);
+                player.Respawn(spawnPosition, spawnRotation);
             }
         }
 

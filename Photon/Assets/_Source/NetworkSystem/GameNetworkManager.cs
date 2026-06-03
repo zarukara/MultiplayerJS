@@ -21,20 +21,10 @@ namespace NetworkSystem
 
             if (RoundManager.Instance != null)
             {
-                Transform spawnTransform =
-                    RoundManager.Instance.GetSpawnTransform(team);
+                spawnPosition = RoundManager.Instance.GetSpawnPosition(team);
+                spawnRotation = RoundManager.Instance.GetSpawnRotation(team);
 
-                if (spawnTransform != null)
-                {
-                    spawnPosition = spawnTransform.position;
-                    spawnRotation = spawnTransform.rotation;
-
-                    Debug.Log($"Spawn found for {team}: {spawnPosition}");
-                }
-                else
-                {
-                    Debug.LogError($"Spawn not found for team: {team}");
-                }
+                Debug.Log($"Spawn found for {team}: {spawnPosition}");
             }
             else
             {
