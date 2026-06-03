@@ -17,28 +17,28 @@ namespace RoundSystem
         [SerializeField] private int minPlayersToStart = 2;
         [SerializeField] private float nextRoundDelay = 3f;
 
-        [SyncVar] private int redScore;
-        [SyncVar] private int blueScore;
+        [SyncVar] private int purpleScore;
+        [SyncVar] private int yellowScore;
         [SyncVar] private int currentRound;
         [SyncVar] private bool roundActive;
         [SyncVar] private bool matchFinished;
 
-        [SyncVar] private int redPlayersCount;
-        [SyncVar] private int bluePlayersCount;
+        [SyncVar] private int purplePlayersCount;
+        [SyncVar] private int yellowPlayersCount;
 
         [SyncVar] private string roundWinnerText;
         [SyncVar] private string matchWinnerText;
 
         private readonly List<MirrorPlayer> players = new List<MirrorPlayer>();
 
-        public int RedScore => redScore;
-        public int BlueScore => blueScore;
+        public int PurpleScore => purpleScore;
+        public int YellowScore => yellowScore;
         public int CurrentRound => currentRound;
         public bool RoundActive => roundActive;
         public bool MatchFinished => matchFinished;
 
-        public int RedPlayersCount => redPlayersCount;
-        public int BluePlayersCount => bluePlayersCount;
+        public int PurplePlayersCount => purplePlayersCount;
+        public int YellowPlayersCount => yellowPlayersCount;
 
         public string RoundWinnerText => roundWinnerText;
         public string MatchWinnerText => matchWinnerText;
@@ -50,14 +50,14 @@ namespace RoundSystem
 
         public override void OnStartServer()
         {
-            redScore = 0;
-            blueScore = 0;
+            purpleScore = 0;
+            yellowScore = 0;
             currentRound = 0;
             roundActive = false;
             matchFinished = false;
 
-            redPlayersCount = 0;
-            bluePlayersCount = 0;
+            purplePlayersCount = 0;
+            yellowPlayersCount = 0;
 
             roundWinnerText = string.Empty;
             matchWinnerText = string.Empty;
@@ -99,8 +99,8 @@ namespace RoundSystem
         [Server]
         private void UpdateTeamPlayersCount()
         {
-            redPlayersCount = 0;
-            bluePlayersCount = 0;
+            purplePlayersCount = 0;
+            yellowPlayersCount = 0;
 
             foreach (MirrorPlayer player in players)
             {
@@ -109,13 +109,13 @@ namespace RoundSystem
                     continue;
                 }
 
-                if (player.Team == TeamType.Red)
+                if (player.Team == TeamType.Purple)
                 {
-                    redPlayersCount++;
+                    purplePlayersCount++;
                 }
-                else if (player.Team == TeamType.Blue)
+                else if (player.Team == TeamType.Yellow)
                 {
-                    bluePlayersCount++;
+                    yellowPlayersCount++;
                 }
             }
         }
@@ -133,10 +133,10 @@ namespace RoundSystem
                 return;
             }
 
-            int redAlive = 0;
-            int blueAlive = 0;
-            int redPlayers = 0;
-            int bluePlayers = 0;
+            int purpleAlive = 0;
+            int yellowAlive = 0;
+            int purplePlayers = 0;
+            int yellowPlayers = 0;
 
             foreach (MirrorPlayer player in players)
             {
@@ -145,39 +145,39 @@ namespace RoundSystem
                     continue;
                 }
 
-                if (player.Team == TeamType.Red)
+                if (player.Team == TeamType.Purple)
                 {
-                    redPlayers++;
+                    purplePlayers++;
 
                     if (!player.IsDead)
                     {
-                        redAlive++;
+                        purpleAlive++;
                     }
                 }
 
-                if (player.Team == TeamType.Blue)
+                if (player.Team == TeamType.Yellow)
                 {
-                    bluePlayers++;
+                    yellowPlayers++;
 
                     if (!player.IsDead)
                     {
-                        blueAlive++;
+                        yellowAlive++;
                     }
                 }
             }
 
-            if (redPlayers == 0 || bluePlayers == 0)
+            if (purplePlayers == 0 || yellowPlayers == 0)
             {
                 return;
             }
 
-            if (redAlive <= 0 && blueAlive > 0)
+            if (purpleAlive <= 0 && yellowAlive > 0)
             {
-                ServerEndRound(TeamType.Blue);
+                ServerEndRound(TeamType.Yellow);
             }
-            else if (blueAlive <= 0 && redAlive > 0)
+            else if (yellowAlive <= 0 && purpleAlive > 0)
             {
-                ServerEndRound(TeamType.Red);
+                ServerEndRound(TeamType.Purple);
             }
         }
 
@@ -220,28 +220,28 @@ namespace RoundSystem
         {
             roundActive = false;
 
-            if (winnerTeam == TeamType.Red)
+            if (winnerTeam == TeamType.Purple)
             {
-                redScore++;
-                roundWinnerText = "Red team wins round";
+                purpleScore++;
+                roundWinnerText = "PURPLE TEAM WINS ROUND";
             }
             else
             {
-                blueScore++;
-                roundWinnerText = "Blue team wins round";
+                yellowScore++;
+                roundWinnerText = "YELLOW TEAM WINS ROUND";
             }
 
             Debug.Log(roundWinnerText);
 
-            if (redScore >= roundsToWin)
+            if (purpleScore >= roundsToWin)
             {
-                ServerEndMatch(TeamType.Red);
+                ServerEndMatch(TeamType.Purple);
                 return;
             }
 
-            if (blueScore >= roundsToWin)
+            if (yellowScore >= roundsToWin)
             {
-                ServerEndMatch(TeamType.Blue);
+                ServerEndMatch(TeamType.Yellow);
                 return;
             }
 
@@ -254,9 +254,9 @@ namespace RoundSystem
             matchFinished = true;
             roundActive = false;
 
-            matchWinnerText = winnerTeam == TeamType.Red
-                ? "Red team wins match"
-                : "Blue team wins match";
+            matchWinnerText = winnerTeam == TeamType.Purple
+                ? "PURPLE TEAM WINS MATCH"
+                : "YELLOW TEAM WINS MATCH";
 
             Debug.Log(matchWinnerText);
         }

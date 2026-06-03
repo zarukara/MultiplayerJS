@@ -13,8 +13,8 @@ namespace NetworkSystem
         public override void OnServerAddPlayer(NetworkConnectionToClient conn)
         {
             TeamType team = connectedPlayersCount % 2 == 0
-                ? TeamType.Red
-                : TeamType.Blue;
+                ? TeamType.Purple
+                : TeamType.Yellow;
 
             Vector3 spawnPosition = Vector3.zero;
             Quaternion spawnRotation = Quaternion.identity;

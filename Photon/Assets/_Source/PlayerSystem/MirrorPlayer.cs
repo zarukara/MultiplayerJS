@@ -17,8 +17,8 @@ namespace PlayerSystem
 
         [Header("Visual")]
         [SerializeField] private Renderer bodyRenderer;
-        [SerializeField] private Color redTeamColor = Color.red;
-        [SerializeField] private Color blueTeamColor = Color.blue;
+        [SerializeField] private Color purpleTeamColor = new Color(0.45f, 0.15f, 0.9f, 1f);
+        [SerializeField] private Color yellowTeamColor = new Color(1f, 0.85f, 0.1f, 1f);
         [SerializeField] private Color deadColor = Color.gray;
 
         [SyncVar(hook = nameof(OnHealthChanged))]
@@ -212,45 +212,45 @@ namespace PlayerSystem
             }
         }
 
-		[Server]
-		public void Respawn(Vector3 spawnPosition, Quaternion spawnRotation)
-		{
- 		   currentHealth = maxHealth;
- 		   isDead = false;
+        [Server]
+        public void Respawn(Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            currentHealth = maxHealth;
+            isDead = false;
 
-   		 transform.position = spawnPosition;
-  		  transform.rotation = spawnRotation;
+            transform.position = spawnPosition;
+            transform.rotation = spawnRotation;
 
- 		   Debug.Log($"Respawn player {netId} team {team} to {spawnPosition}");
+            Debug.Log($"Respawn player {netId} team {team} to {spawnPosition}");
 
-		    RpcRespawnForObservers(spawnPosition, spawnRotation);
+            RpcRespawnForObservers(spawnPosition, spawnRotation);
 
- 		   if (connectionToClient != null)
-		    {
- 		       TargetRespawnOwner(connectionToClient, spawnPosition, spawnRotation);
- 		   }
-		}
+            if (connectionToClient != null)
+            {
+                TargetRespawnOwner(connectionToClient, spawnPosition, spawnRotation);
+            }
+        }
 
-		[ClientRpc]
-		private void RpcRespawnForObservers(Vector3 spawnPosition, Quaternion spawnRotation)
-		{
- 		   transform.position = spawnPosition;
-   		 transform.rotation = spawnRotation;
+        [ClientRpc]
+        private void RpcRespawnForObservers(Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            transform.position = spawnPosition;
+            transform.rotation = spawnRotation;
 
-  		  ApplyDeadVisual();
-		}
+            ApplyDeadVisual();
+        }
 
-		[TargetRpc]
-		private void TargetRespawnOwner(
- 		   NetworkConnectionToClient target,
- 		   Vector3 spawnPosition,
- 		   Quaternion spawnRotation)
-		{
-  		  transform.position = spawnPosition;
- 		   transform.rotation = spawnRotation;
-	
- 		   ApplyDeadVisual();
-		}
+        [TargetRpc]
+        private void TargetRespawnOwner(
+            NetworkConnectionToClient target,
+            Vector3 spawnPosition,
+            Quaternion spawnRotation)
+        {
+            transform.position = spawnPosition;
+            transform.rotation = spawnRotation;
+
+            ApplyDeadVisual();
+        }
 
         private void OnHealthChanged(int oldValue, int newValue)
         {
@@ -279,7 +279,7 @@ namespace PlayerSystem
             }
 
             bodyRenderer.material.color =
-                team == TeamType.Red ? redTeamColor : blueTeamColor;
+                team == TeamType.Purple ? purpleTeamColor : yellowTeamColor;
         }
 
         private void ApplyDeadVisual()
